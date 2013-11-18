@@ -42,16 +42,16 @@ void RProgApp::ColorsChanged(int i, void *vp)
 		m = n->GetNode(i);
 
 		if(!m || !m->line) {
-			puts("color setting failed\n");
+//			puts("color setting failed\n");
 			return;
 		}
 		SetupColors(m);
-		printf("colors set to %i -- %s\n",i,m->line);
+//		printf("colors set to %i -- %s\n",i,m->line);
 
 		wnd->Draw(true); //redraw everything
 		return;
 	}
-	puts("color setting failed, missing file\n");
+//	puts("color setting failed, missing file\n");
 }
 
 //-----------------------------------------------
@@ -484,7 +484,7 @@ int main()
 
 
 
-int main()
+int RMain()
 {
 	RProgApp app;
 	app.Setup();
