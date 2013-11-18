@@ -1,6 +1,9 @@
 // vim:ts=4 sts=0 sw=4
 
-#include "../Rtk/RtkAll.h"
+#include "app.h"
+
+RConfig rcf;
+RConfigNode *colors;
 
 //-----------------------------------------------
 // RSpp_text -- testing code
@@ -27,28 +30,52 @@ CLASS_RSPP(text)
 // RSpp_text -- testing code
 //-----------------------------------------------
 
+void SetupColors(RConfigNode *n);
 
-int RMain()
+void RProgApp::ColorsChanged(int i, void *vp)
 {
-	RApp app;
+	RConfigNode *n,*m;
+	
+	if(colors && colors->child) {
+		n = (RConfigNode*)colors->child;
 
-	app.wnd = new RMainWindow(60,50,600,460); //XXX
-	app.wnd->Create();
-	app.wnd->SetText((char*)"Main Window");
-	app.wnd->SetAlignment(AL_V);
-	app.wnd->x_mgn = 0;
-	app.wnd->y_mgn = 0;
-	app.wnd->spacing = 8;
+		m = n->GetNode(i);
+
+		if(!m || !m->line) {
+			puts("color setting failed\n");
+			return;
+		}
+		SetupColors(m);
+		printf("colors set to %i -- %s\n",i,m->line);
+
+		wnd->Draw(true); //redraw everything
+		return;
+	}
+	puts("color setting failed, missing file\n");
+}
+
+//-----------------------------------------------
+
+
+void RProgApp::Setup()
+{
+	wnd = new RMainWindow(60,50,600,460); //XXX
+	wnd->Create();
+	wnd->SetText((char*)"Main Window");
+	wnd->SetAlignment(AL_V);
+	wnd->x_mgn = 0;
+	wnd->y_mgn = 0;
+	wnd->spacing = 8;
 
 	//-------------------------------------------
 	// Menu
 	RControl *t;
 #if 1	
 	RMenuButton *mbtn;
-	RMenuBar *rm = new RMenuBar(app.wnd);
+	RMenuBar *rm = new RMenuBar(wnd);
 
 	{
-	//RMenuBar *rr = new RMenuBar(app.wnd);
+	//RMenuBar *rr = new RMenuBar(wnd);
 	RMenuBar *rr = rm;
 	rr->SetText((char*)"menubar");
 
@@ -60,7 +87,7 @@ int RMain()
 	w->AddItem((char*)"New");
 	mbtn = w->AddItem((char*)"Open");
 	w->AddItem((char*)"Save");
-	w->AddItemC((char*)"Close",&app,(char*)"Sl_Quit()");
+	w->AddItemC((char*)"Close",this,(char*)"Sl_Quit()");
 	
 	w = rr->AddPopup((char*)"Edit");
 	w->SetText((char*)"Popup Edit");
@@ -72,20 +99,20 @@ int RMain()
 			w->AddItem((char*)"11New");
 			w->AddItem((char*)"11Open");
 			w->AddItem((char*)"11Save");
-			w->AddItemC((char*)"11Close",&app,(char*)"Sl_Quit()");
+			w->AddItemC((char*)"11Close",this,(char*)"Sl_Quit()");
 		}
 		w->AddItem((char*)"11Open");
 		w->AddItem((char*)"11Save");
-		w->AddItemC((char*)"11Close",&app,(char*)"Sl_Quit()");
+		w->AddItemC((char*)"11Close",this,(char*)"Sl_Quit()");
 	}
 	mb = w->AddItem((char*)"Paste");
 	{	RPopupMenu *w = new RPopupMenu(mb);
 		w->AddItem((char*)"11New");
 		w->AddItem((char*)"11Open");
 		w->AddItem((char*)"11Save");
-		w->AddItemC((char*)"11Close",&app,(char*)"Sl_Quit()");
+		w->AddItemC((char*)"11Close",this,(char*)"Sl_Quit()");
 	}
-	w->AddItemC((char*)"Delete",&app,(char*)"Sl_Quit()");
+	w->AddItemC((char*)"Delete",this,(char*)"Sl_Quit()");
 
 	w = rr->AddPopup((char*)"View");
 	w->SetText((char*)"Popup View");
@@ -101,7 +128,7 @@ int RMain()
 		w->AddItem((char*)"11New");
 		w->AddItem((char*)"11Open");
 		w->AddItem((char*)"11Save");
-		w->AddItemC((char*)"11Close",&app,(char*)"Sl_Quit()");
+		w->AddItemC((char*)"11Close",this,(char*)"Sl_Quit()");
 	}
 	w->AddItem((char*)"b");
 	w->AddItem((char*)"c");
@@ -120,7 +147,7 @@ int RMain()
 	// Toolbar
 	{
 	RControl *b;
-	RHVBox *rt = new RHVBox(app.wnd);
+	RHVBox *rt = new RHVBox(wnd);
 	RHVBox *rr = rt;
 	rr->SetAlignment(AL_H | AL_STRETCHH | AL_FITH | AL_FITV);
 	rr->x_weight = 10;
@@ -136,10 +163,10 @@ int RMain()
 		b->Connect((char*)"Si_Clicked(int)",t,(char*)"Sl_SetText(char*)", (UPTR)"--uptr--", new RSpp_Uptr("(char*)"));
 		b->SetAlignment(AL_STRETCHH);
 	b = new RButton(rr); b->SetText((char*)"sislcnt"); b->x_weight = 1;
-		b->Connect((char*)"Si_Clicked(int)"	,&app,(char*)"Sl_ShowIt()");
+		b->Connect((char*)"Si_Clicked(int)"	,this,(char*)"Sl_ShowIt()");
 		b->SetAlignment(AL_STRETCHH);
 	b = new RButton(rr); b->SetText((char*)"close"); b->x_weight = 1;
-		b->Connect((char*)"Si_Clicked(int)"	,&app,(char*)"Sl_Quit()");
+		b->Connect((char*)"Si_Clicked(int)"	,this,(char*)"Sl_Quit()");
 		b->SetAlignment(AL_STRETCHH);
 	}
 #endif
@@ -148,12 +175,12 @@ int RMain()
 	RSBox *rsb;
 	
 #if 1
-	rsb = new RSBox(app.wnd);
+	rsb = new RSBox(wnd);
 	RContainer *sv = new RScrollView(rsb);
 	rsb->Setup(10,10);
 	rsb->frame = F_DOWN;
 #else
-	RContainer *sv = new RScrollView(app.wnd);
+	RContainer *sv = new RScrollView(wnd);
 	sv->x_weight = 10;
 	sv->y_weight = 10;
 #endif
@@ -170,20 +197,20 @@ int RMain()
 	rp->SetAlignment(AL_V | AL_STRETCHV);
 	rsb->SetPos(2,0);//*/
 	
-//	RTabControl *tc = new RTabControl(app.wnd);
+//	RTabControl *tc = new RTabControl(wnd);
 
-	RControl *rra = new RRange(app.wnd);
+	RControl *rra = new RRange(wnd);
 //XXX	rra->Connect((char*)"Si_Moved(int)",sv,(char*)"Sl_ScrollY(int)",0);
 	rra->x_weight = 10;
 	rra->SetText((char*)"Range");
 //	rra->frame = F_DOWN;
 	rra->SetAlignment(AL_STRETCHH);
 
-	RProgressBar *rp = new RProgressBar(app.wnd);
+	RProgressBar *rp = new RProgressBar(wnd);
 	rra->Connect((char*)"Si_Moved(int)",rp,(char*)"Sl_Move(int)",0);
 	rp->SetAlignment(AL_H | AL_STRETCHH);
 
-	RStatusBar *rstb = new RStatusBar(app.wnd);
+	RStatusBar *rstb = new RStatusBar(wnd);
 	rstb->SetAlignment(AL_H | AL_STRETCHH);
 
 //-------------------------------------------------------------------
@@ -196,7 +223,7 @@ int RMain()
 // Tab control
 
 	RTabControl *tc = new RTabControl(sv);
-//	RTabControl *tc = new RTabControl(app.wnd);
+//	RTabControl *tc = new RTabControl(wnd);
 	tc->SetText((char*)"TabControl");
 	tc->x_weight = 10;
 	tc->y_weight = 10;
@@ -244,7 +271,7 @@ int RMain()
 
 	b1->Connect((char*)"Si_Clicked(int)",rstb,(char*)"Sl_SetText(char*)", 0, new RSpp_text());
 	//b1->Connect((char*)"Si_Clicked(int)"	,b2,(char*)"Sl_Focus()");
-	b2->Connect((char*)"Si_Clicked(int)"	,&app,(char*)"Sl_Quit()");
+	b2->Connect((char*)"Si_Clicked(int)"	,this,(char*)"Sl_Quit()");
 	b3->Connect((char*)"Si_Clicked(int)"	,b2,(char*)"Si_Clicked(int)");
 
 
@@ -272,6 +299,21 @@ int RMain()
 	cb->AddItem((char*)"CItem F");
 
 //--------------
+
+	colors = rcf.ReadRcf("../Config/Colors.rcf");
+	cb = new RComboBox(ww);
+	ww->SetPos(2,1);
+
+	if(!colors) {
+		cb->AddItem((char*)"CItem x0");
+		cb->AddItem((char*)"CItem x1");
+		cb->AddItem((char*)"CItem x2");
+	}else{
+		for(RConfigNode *c = (RConfigNode*)colors->child; c; c = (RConfigNode*)c->next) {
+			cb->AddItem((char*) c->line);
+		}
+	}
+	cb->Connect("Si_IndexChanged(int,void*)",this,"ColorsChanged(int,void*)");
 
 #endif
 //----------------------
@@ -416,18 +458,14 @@ int RMain()
 #endif
 //----------------------
 
+}
+
 #ifdef XLIB
 //	printf((char*)"----CConn size %i----\n",sizeof(CConn));
 //	printf((char*)"----RControl size %i----\n",sizeof(RControl));
 //	printf((char*)"----RWindow size %i----\n",sizeof(RWindow));
 #endif
 	
-	app.Run();
-
-	return 0;
-}
-
-
 /*
 extern int iTR;
 int main()
@@ -445,6 +483,14 @@ int main()
 
 
 
+
+int main()
+{
+	RProgApp app;
+	app.Setup();
+	app.Run();
+	return 0;
+}
 
 
 

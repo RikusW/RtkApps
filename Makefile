@@ -16,8 +16,12 @@ libRtk: ../Rtk/libRtk.so
 
 #=========================================================#
 
-app: app.cpp libRtk
-	g++ -o app app.cpp $(FLAGS)
+app_sisl.cpp: app.h ../Rtk/parse
+	../Rtk/parse app.h > app_sisl.cpp
+
+
+app: app.h app.cpp app_sisl.cpp libRtk
+	g++ -o app app.cpp app_sisl.cpp $(FLAGS)
 # -lefence
 #-L/usr/X11R6/lib -lX11
 #	-lefence
