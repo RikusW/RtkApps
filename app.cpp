@@ -300,7 +300,7 @@ void RProgApp::Setup()
 
 //--------------
 
-	colors = rcf.ReadRcf("../Config/Colors.rcf");
+	colors = rcf.ReadRcf("Colors.rcf");
 	cb = new RComboBox(ww);
 	ww->SetPos(2,1);
 
