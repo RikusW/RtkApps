@@ -1,5 +1,5 @@
 
-#include "../Rtk/RtkAll.h"
+#include "Rtk-gui/RtkAll.h"
 
 
 class RProgApp : public RApp

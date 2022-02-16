@@ -1,5 +1,5 @@
 
-FLAGS = -DXLIB -Wall -g -lRtk
+FLAGS = -DXLIB -Wall -g -lRtk-base -lRtk-gui -I../
 #FLAGS = -DXLIB -Wall -g -fpermissive -I/usr/X11/include -L/usr/X11/lib -lX11 -L../Rtk -lRtk  #required on some other platforms
 
 #-Wl,-rpath,/home/rikus/Programming/Rtk
@@ -12,12 +12,12 @@ clean:
 	rm -fv *~
 	rm -fv rex app caabb caabb_sisl.cpp str
 
-libRtk: ../Rtk/libRtk.so
+libRtk: ../Rtk-gui/libRtk-gui.so
 
 #=========================================================#
 
-app_sisl.cpp: app.h ../Rtk/parse
-	../Rtk/parse app.h > app_sisl.cpp
+app_sisl.cpp: app.h ../Rtk-gui/parse
+	../Rtk-gui/parse app.h > app_sisl.cpp
 
 
 app: app.h app.cpp app_sisl.cpp libRtk
@@ -43,22 +43,22 @@ str: str.cpp libRtk
 
 #=========================================================#
 
-prog_sisl.cpp: prog.h ../Rtk/parse
-	../Rtk/parse prog.h > prog_sisl.cpp
+prog_sisl.cpp: prog.h ../Rtk-gui/parse
+	../Rtk-gui/parse prog.h > prog_sisl.cpp
 
 prog: prog.h prog.cpp prog_sisl.cpp ../Rtk/libRtk.so
 	g++ -o prog prog.cpp prog_sisl.cpp $(FLAGS)
 
 #=========================================================#
 
-caabb_sisl.cpp: CAaBb.h ../Rtk/parse
-	../Rtk/parse CAaBb.h > caabb_sisl.cpp
+caabb_sisl.cpp: CAaBb.h ../Rtk-gui/parse
+	../Rtk-gui/parse CAaBb.h > caabb_sisl.cpp
 
 caabb_sisl.o: caabb_sisl.cpp
 	g++ $(FLAGS) -c -o caabb_sisl.o caabb_sisl.cpp
 
-caabb: CAaBb.h CAaBb.cpp caabb_sisl.o ../Rtk/libRtk.so
-	g++ $(FLAGS) -o caabb CAaBb.cpp caabb_sisl.o -L../Rtk/ -lRtk
+caabb: CAaBb.h CAaBb.cpp caabb_sisl.o
+	g++ $(FLAGS) -o caabb CAaBb.cpp caabb_sisl.o -lRtk-gui
 # -lefence
 
 #=========================================================#

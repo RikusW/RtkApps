@@ -2,8 +2,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "../Rtk/RString.h"
-#include "../Rtk/RTreeView.h"
+#include "Rtk-base/RString.h"
+#include "Rtk-gui/RTreeView.h"
 
 RTreeNode *textpopup;
 

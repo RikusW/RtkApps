@@ -1,10 +1,10 @@
 // vim:ts=4 sts=0 sw=4
 
-typedef unsigned long u32;
+//typedef unsigned long u32;
 
 #include <stdio.h>
 #include <string.h>
-#include "../Rtk/sisl.h"
+#include "Rtk-gui/sisl.h"
 
 
 
