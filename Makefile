@@ -1,65 +1,40 @@
 
-FLAGS = -DXLIB -Wall -g -lRtk-base -lRtk-gui -I../
-#FLAGS = -DXLIB -Wall -g -fpermissive -I/usr/X11/include -L/usr/X11/lib -lX11 -L../Rtk -lRtk  #required on some other platforms
-
-#-Wl,-rpath,/home/rikus/Programming/Rtk
-#LD_LIBRARY_PATH
+CXXFLAGS += -DXLIB -Wall -g -lRtk-base -lRtk-gui -I../
 
 all: app
 
 clean:
 	rm -fv *.o
 	rm -fv *~
-	rm -fv rex app caabb caabb_sisl.cpp str
+	rm -fv app rex str CAaBb *_sisl.cpp
 
-libRtk: ../Rtk-gui/libRtk-gui.so
+#=========================================================#
+#Keep Rtk-parse output
+.PRECIOUS: %_sisl.cpp
+
+%_sisl.cpp: %.h
+	../Rtk-gui/Rtk-parse $< > $@
 
 #=========================================================#
 
-app_sisl.cpp: app.h ../Rtk-gui/parse
-	../Rtk-gui/parse app.h > app_sisl.cpp
-
-
-app: app.h app.cpp app_sisl.cpp libRtk
-	g++ -o app app.cpp app_sisl.cpp $(FLAGS)
+app: app.o app_sisl.o
+	g++ -o $@ $^ $(CXXFLAGS)
 # -lefence
-#-L/usr/X11R6/lib -lX11
-#	-lefence
 
 #=========================================================#
 
-rex: rex.cpp libRtk
-	g++ -o rex rex.cpp $(FLAGS)
+rex: rex.cpp
+	g++ -o $@ $^ $(CXXFLAGS)
 
 #=========================================================#
 
-cfg: cfg.cpp libRtk
-	g++ -o cfg cfg.cpp $(FLAGS)
+str: str.cpp
+	g++ -o $@ $^ $(CXXFLAGS)
 
 #=========================================================#
 
-str: str.cpp libRtk
-	g++ -o str str.cpp $(FLAGS)
-
-#=========================================================#
-
-prog_sisl.cpp: prog.h ../Rtk-gui/parse
-	../Rtk-gui/parse prog.h > prog_sisl.cpp
-
-prog: prog.h prog.cpp prog_sisl.cpp ../Rtk/libRtk.so
-	g++ -o prog prog.cpp prog_sisl.cpp $(FLAGS)
-
-#=========================================================#
-
-caabb_sisl.cpp: CAaBb.h ../Rtk-gui/parse
-	../Rtk-gui/parse CAaBb.h > caabb_sisl.cpp
-
-caabb_sisl.o: caabb_sisl.cpp
-	g++ $(FLAGS) -c -o caabb_sisl.o caabb_sisl.cpp
-
-caabb: CAaBb.h CAaBb.cpp caabb_sisl.o
-	g++ $(FLAGS) -o caabb CAaBb.cpp caabb_sisl.o -lRtk-gui
-# -lefence
+CAaBb: CAaBb.cpp CAaBb_sisl.o
+	g++ -o $@ $^ $(CXXFLAGS)
 
 #=========================================================#
 
